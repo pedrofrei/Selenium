@@ -1,0 +1,63 @@
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+
+public class TesteFramesEJanelas {
+	
+	private WebDriver driver; //Instancia uma variavel global pra essa classe que pode ser usada por todos métodos dela
+	
+	@Before
+	public void inicializaChrome() {
+	System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
+	WebDriver driver = new ChromeDriver();
+	driver.manage().window().setSize(new Dimension(1200, 765));
+	driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");// Serve pra abrir o site direto do arquivo, que está em src/main/resources aqui do projeto
+	}
+	
+	@Test
+	public void loginPage() {
+		
+		driver.switchTo().frame("frame1"); //Muda o foco da execução para o frame1
+		driver.findElement(By.id("frameButton")).click();
+		Alert alert = driver.switchTo().alert(); //Muda o foco da execução para o alerta
+		
+		String msg = alert.getText(); //Guarda a mensagem do alerta antes que ele feche
+		Assert.assertEquals("Frame OK!", msg);
+		alert.accept();
+		driver.switchTo().defaultContent(); //Muda o foco da execução para default
+		driver.findElement(By.id("elementosForm:nome")).sendKeys(msg);
+		
+		driver.quit();
+	}
+	
+	@Test
+	public void deveInteragirComJanelas() {
+		
+		driver.findElement(By.id("buttonPopUpEasy")).click();
+		driver.switchTo().window("Popup");//Muda o foco da execução para o popup
+		driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
+		driver.close();
+		driver.switchTo().window("");
+		driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
+		
+	}
+	
+	@Test
+	public void deveInteragirComJanelasSemTitulo() {
+		
+		driver.findElement(By.id("buttonPopUpHard")).click();
+		System.out.println(driver.getWindowHandle());//Mostra o nome da janela que está em foco, serve para referenciar janelas sem título
+		System.out.println(driver.getWindowHandles());//Mostra o ID de todas janelas que estão abertas pelo handler
+		driver.switchTo().window((String) driver.getWindowHandles().toArray()[1]);//O window precisa ser uma String, então usa (String) pra fazer um cast 
+		driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
+		driver.switchTo().window((String) driver.getWindowHandles().toArray()[0]);
+		driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
+		driver.quit();
+	}
+}
