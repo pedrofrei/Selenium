@@ -1,0 +1,135 @@
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
+
+public class DesafioCadastro {
+	
+	private WebDriver driver;
+	
+	@Before
+	public void inicializaChrome() {
+		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
+		WebDriver driver = new ChromeDriver();
+		driver.manage().window().setSize(new Dimension(1200, 765));
+		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
+	}
+	
+	@Test
+	public void deveBuscarTextosNaPagina() {
+		
+		String nome = "Pedro";
+		String sobrenome = "Silva Frei";
+		
+		//Preenche textfield nome e checa se está conforme esperado
+		driver.findElement(By.id("elementosForm:nome")).sendKeys(nome);
+		Assert.assertEquals(nome, driver.findElement(By.id("elementosForm:nome")).getAttribute("value"));
+		
+		//Preenche textfield sobrenome e checa se está conforme esperado
+		driver.findElement(By.id("elementosForm:sobrenome")).sendKeys(sobrenome);
+		Assert.assertEquals(sobrenome, driver.findElement(By.id("elementosForm:sobrenome")).getAttribute("value"));
+		
+		//Seleciona sexo via radio button e verifica se está como esperado
+		driver.findElement(By.id("elementosForm:sexo:0")).click();
+		Assert.assertTrue(driver.findElement(By.id("elementosForm:sexo:0")).isSelected());
+		
+		//Seleciona checkbox a comida favorita e verifica se está como esperado
+		driver.findElement(By.id("elementosForm:comidaFavorita:2")).click();
+		Assert.assertTrue(driver.findElement(By.id("elementosForm:comidaFavorita:2")).isSelected());
+		
+		//Seleciona ComboBox e verifica se está como esperado
+		new Select(driver.findElement(By.id("elementosForm:escolaridade"))).selectByVisibleText("Mestrado");
+		/*WebElement elemento_escolaridade = driver.findElement(By.id("elementosForm:escolaridade"));
+		Select combo = new Select(elemento_escolaridade);
+		combo.selectByIndex(2);
+		Assert.assertEquals("2o grau incompleto" , combo.getFirstSelectedOption().getText());*/
+		
+		//Seleciona ComboBoxMultiplo um esporte e verifica se está como esperado
+		new Select(driver.findElement(By.id("elementosForm:esportes"))).selectByVisibleText("Natacao");
+		/*WebElement elemento_esportes = driver.findElement(By.id("elementosForm:esportes"));
+		combo = new Select(elemento_esportes);
+		combo.selectByVisibleText("Natacao");
+		List<WebElement> allSelectedOptions = combo.getAllSelectedOptions(); //Cria uma lista com todas opções selecionadas(1)
+		Assert.assertEquals(1, allSelectedOptions.size()); // Verifica se tem 3 itens selecionados*/
+		//Clica no botão cadastrar e verifica se o resultado está como esperado
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		
+		Assert.assertTrue(driver.findElement(By.id("resultado")).getText().startsWith("Cadastrado!"));
+		Assert.assertTrue(driver.findElement(By.id("descNome")).getText().endsWith(nome));
+		Assert.assertTrue(driver.findElement(By.id("descSobrenome")).getText().endsWith(sobrenome));
+		Assert.assertEquals("Sexo: Masculino", driver.findElement(By.id("descSexo")).getText());
+		Assert.assertEquals("Comida: Pizza", driver.findElement(By.id("descComida")).getText());
+		Assert.assertEquals("Escolaridade: mestrado", driver.findElement(By.id("descEscolaridade")).getText());
+		Assert.assertEquals("Esportes: Natacao", driver.findElement(By.id("descEsportes")).getText());
+
+		driver.quit();
+	}
+	
+	@Test
+	public void deveValidarNomeObrigatorio() {
+		
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		Alert alert = driver.switchTo().alert();
+		Assert.assertEquals("Nome eh obrigatorio", alert.getText());
+		driver.quit();
+	}
+	
+	@Test
+	public void deveValidarSobrenomeObrigatorio() {
+		
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Nome Qualquer");
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		Alert alert = driver.switchTo().alert();
+		Assert.assertEquals("Sobrenome eh obrigatorio", alert.getText());
+		driver.quit();
+	}
+	
+	@Test
+	public void deveValidarSexoObrigatorio() {
+		
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Nome Qualquer");
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Sobrenome Qualquer");
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		Alert alert = driver.switchTo().alert();
+		Assert.assertEquals("Sexo eh obrigatorio", alert.getText());
+		driver.quit();
+	}
+	
+	@Test
+	public void deveValidarVegetariano() {
+		
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Nome Qualquer");
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Sobrenome Qualquer");
+		driver.findElement(By.id("elementosForm:sexo:0")).click();
+		driver.findElement(By.id("elementosForm:comidaFavorita:0")).click();
+		driver.findElement(By.id("elementosForm:comidaFavorita:3")).click();
+		
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		Alert alert = driver.switchTo().alert();
+		Assert.assertEquals("Tem certeza que voce eh vegetariano?", alert.getText());
+		driver.quit();
+	}
+
+	
+	@Test
+	public void deveValidarEsportistaIndeciso() {
+		
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Nome Qualquer");
+		driver.findElement(By.id("elementosForm:nome")).sendKeys("Sobrenome Qualquer");
+		driver.findElement(By.id("elementosForm:sexo:0")).click();
+		driver.findElement(By.id("elementosForm:comidaFavorita:0")).click();
+		Select combo = new Select(driver.findElement(By.id("elementosForm:esportes")));
+		combo.selectByVisibleText("Karate");
+		combo.selectByVisibleText("O que eh esporte?");
+		driver.findElement(By.id("elementosForm:cadastrar")).click();
+		Alert alert = driver.switchTo().alert();
+		Assert.assertEquals("Voce faz esporte ou nao?", alert.getText());
+		driver.quit();
+	}
+	
+}
