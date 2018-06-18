@@ -1,3 +1,4 @@
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,10 +15,15 @@ public class TesteFramesEJanelas {
 	
 	@Before
 	public void inicializaChrome() {
-	System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
-	WebDriver driver = new ChromeDriver();
-	driver.manage().window().setSize(new Dimension(1200, 765));
-	driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");// Serve pra abrir o site direto do arquivo, que está em src/main/resources aqui do projeto
+		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.manage().window().setSize(new Dimension(1200, 765));
+		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
+	}
+
+	@After
+	public void finaliza() {
+		driver.quit();
 	}
 	
 	@Test
