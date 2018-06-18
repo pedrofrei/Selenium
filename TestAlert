@@ -1,4 +1,6 @@
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
@@ -8,57 +10,48 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 
 public class TestAlert {
-	@Test
-	public void deveInteragirComAlertSimples() {
-		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
-		WebDriver driver = new ChromeDriver();
-		driver.manage().window().setSize(new Dimension(1200, 765));
-		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
-		
-		driver.findElement(By.id("alert")).click();
-		Alert alert = driver.switchTo().alert();
-		String texto = alert.getText(); //Pega o texto do alerta e guarda pra poder usar depois
-		Assert.assertEquals("Alert Simples", texto);
-		alert.accept(); //Aceita o alerta
-		driver.findElement(By.id("elementosForm:nome")).sendKeys(texto);
-		//driver.quit();
-	}
 	
-	@Test
-	public void deveInteragirComConfirm() {
-		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
-		WebDriver driver = new ChromeDriver();
+	private WebDriver driver;
+	private DSL dsl;
+	
+	@Before
+	public void inicializaChrome(){
+		//System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
+		driver = new ChromeDriver();
 		driver.manage().window().setSize(new Dimension(1200, 765));
 		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
-		
-		//Selecionando a opção de confirmar
-		driver.findElement(By.id("confirm")).click();
-		Alert alerta = driver.switchTo().alert();
-		String texto = alerta.getText(); // Pega otexto do alerta
-		Assert.assertEquals("Confirm Simples", alerta.getText());
-		alerta.accept();
-		Assert.assertEquals("Confirmado", alerta.getText());
-		alerta.accept();
-		driver.findElement(By.id("elementosForm:nome")).sendKeys(texto);
-		
-		//Selecionando a opção de cancelar
-		driver.findElement(By.id("confirm")).click();
-		alerta = driver.switchTo().alert();
-		Assert.assertEquals("Confirm Simples", alerta.getText());
-		alerta.dismiss();
-		texto = alerta.getText(); //Pega o texto do alerta depois de dar um cancelar
-		Assert.assertEquals("Negado", alerta.getText());
-		alerta.dismiss();
-		driver.findElement(By.id("elementosForm:sobrenome")).sendKeys(texto);
+		dsl = new DSL(driver);
+	}
+
+	@After
+	public void finaliza() {
 		driver.quit();
 	}
 	
 	@Test
+	public void deveInteragirComAlertSimples() {
+		dsl.clicarBotao("alert");
+		String texto = dsl.alertaObterTextoEAceita(); //Pega o texto do alerta e guarda pra poder usar depois
+		Assert.assertEquals("Alert Simples", texto);
+		dsl.escrever("elementosForm:nome", texto);
+	}
+	
+	@Test
+	public void deveInteragirComConfirm() {
+		
+		//Selecionando a opção de confirmar
+		dsl.clicarBotao("confirm");
+		Assert.assertEquals("Confirm Simples", dsl.alertaObterTextoEAceita());
+		Assert.assertEquals("Confirmado", dsl.alertaObterTextoEAceita());
+		
+		//Selecionando a opção de cancelar
+		dsl.clicarBotao("confirm");
+		Assert.assertEquals("Confirm Simples", dsl.alertaObterTextoEAceita());
+		Assert.assertEquals("Negado", dsl.alertaObterTextoENega());
+	}
+	
+	@Test
 	public void deveInteragirComPrompt() {
-		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
-		WebDriver driver = new ChromeDriver();
-		driver.manage().window().setSize(new Dimension(1200, 765));
-		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
 		
 		String numero = "12"; //Texto que vai ser digitado no prompt
 		driver.findElement(By.id("prompt")).click();
@@ -70,6 +63,5 @@ public class TestAlert {
 		alerte.accept();
 		Assert.assertEquals(":D", alerte.getText());
 		alerte.accept();
-		driver.quit();
 	}
 }
