@@ -1,0 +1,83 @@
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+@RunWith(Parameterized.class) //Serve para executar os testes parametrizados
+public class TesteRegrasCadastro {
+	
+	private WebDriver driver;
+	private DSL dsl;
+	private CampoTreinamentoPage page;
+	
+	@Parameter //Atribui valor aos parametros para ficar facil na hora de passar os valores pela collection
+	public String nome;
+	@Parameter (value=1)
+	public String Sobrenome;
+	@Parameter (value=2)
+	public String sexo;
+	@Parameter (value=3)
+	public List<String> comidas;
+	@Parameter (value=4)
+	public String[] esportes;
+	@Parameter (value=5)
+	public String msg;
+	
+	@Before
+	public void inicializaChrome() {
+		System.setProperty("webdriver.chrome.driver","C:/Users/IBM_ADMIN/Documents/WEBDRIVER/chromedriver.exe");
+		driver = new ChromeDriver();
+		driver.manage().window().setSize(new Dimension(1200, 765));
+		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
+		dsl = new DSL(driver);
+		page = new CampoTreinamentoPage(driver);
+	}
+
+	@After
+	public void finaliza() {
+		driver.quit();
+	}
+	
+	// Cria uma coleção com um conjunto de dados que vai passar pela estrutura de teste //Vai ser um CENÁRIO de teste
+	// Foram criados 5 cenários em cima da mesma estrutura
+	@Parameters
+	public static Collection<Object[]> getCollection(){
+		return Arrays.asList(new Object[][] {
+			{"","","",Arrays.asList() ,new String[] {}, "Nome eh obrigatorio"}, // Faz o primeiro teste, onde o nome está vazio
+			{"Pedro","","",Arrays.asList() ,new String[] {}, "Sobrenome eh obrigatorio"},// Faz o segundo teste, onde o nome está preenchido
+			{"Pedro","Frei","",Arrays.asList() ,new String[] {}, "Sexo eh obrigatorio"},// Fazo teste onde sobrenome está preenchido
+			{"Pedro","Frei","Masculino",Arrays.asList("Carne","Vegetariano") ,new String[] {}, "Tem certeza que voce eh vegetariano?"}, // Faz o segundo teste, onde verifica se é vegetariano
+			{"Pedro","Frei","Masculino",Arrays.asList("Carne") ,new String[] {"Karate", "O que eh esporte"}, "Voce faz esporte ou nao"}, // Verifica se é esportista ou não
+		});
+	}
+	
+	@Test
+	public void deveValidarRegras() {
+		
+		page.setNome(nome);
+		page.setSobrenome(Sobrenome);
+		if(sexo.equals("Masculino")) {
+			page.setSexoMasculino();
+		} 
+		if(sexo.equals("Feminino")) {
+			page.setSexoFeminino();
+		}
+		if(comidas.contains("Carne")) page.setComidaCarne();
+		if(comidas.contains("Pizza")) page.setComidaPizza();
+		if(comidas.contains("Vegetariano")) page.setComidaVegetariano();
+		page.setEsporte(esportes);
+		page.cadastrar();
+		System.out.println(msg);
+		Assert.assertEquals(msg, dsl.alertaObterTextoEAceita());
+	}
+}
