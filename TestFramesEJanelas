@@ -12,6 +12,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 public class TesteFramesEJanelas {
 	
 	private WebDriver driver; //Instancia uma variavel global pra essa classe que pode ser usada por todos métodos dela
+	private DSL dsl;
 	
 	@Before
 	public void inicializaChrome() {
@@ -19,6 +20,7 @@ public class TesteFramesEJanelas {
 		driver = new ChromeDriver();
 		driver.manage().window().setSize(new Dimension(1200, 765));
 		driver.get("file:///" + System.getProperty("user.dir") +  "/src/main/resources/componentes.html");
+		dsl = new DSL(driver);
 	}
 
 	@After
@@ -29,41 +31,35 @@ public class TesteFramesEJanelas {
 	@Test
 	public void loginPage() {
 		
-		driver.switchTo().frame("frame1"); //Muda o foco da execução para o frame1
-		driver.findElement(By.id("frameButton")).click();
-		Alert alert = driver.switchTo().alert(); //Muda o foco da execução para o alerta
-		
-		String msg = alert.getText(); //Guarda a mensagem do alerta antes que ele feche
+		dsl.entrarFrame("frame1"); //Muda o foco da execução para o frame1
+		dsl.clicarBotao("frameButton");
+		String msg = dsl.alertaObterTextoEAceita(); //Muda o foco da execução para o alerta, obtem msg do alert e aceita
 		Assert.assertEquals("Frame OK!", msg);
-		alert.accept();
-		driver.switchTo().defaultContent(); //Muda o foco da execução para default
-		driver.findElement(By.id("elementosForm:nome")).sendKeys(msg);
 		
-		driver.quit();
+		dsl.sairFrame();
+		dsl.escrever("elementosForm:nome", msg);
+
 	}
 	
 	@Test
 	public void deveInteragirComJanelas() {
-		
-		driver.findElement(By.id("buttonPopUpEasy")).click();
-		driver.switchTo().window("Popup");//Muda o foco da execução para o popup
-		driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
+		dsl.clicarBotao("buttonPopUpEasy");	
+		dsl.trocarJanela("Popup"); //driver.switchTo().window("Popup"); //Muda o foco da execução para o popup
+		dsl.escrever(By.tagName("textarea"), "Deu certo?"); //driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
 		driver.close();
-		driver.switchTo().window("");
-		driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
-		
+		dsl.trocarJanela(""); //driver.switchTo().window("");
+		dsl.escrever(By.tagName("textarea"), "E agora?"); //driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
 	}
 	
 	@Test
 	public void deveInteragirComJanelasSemTitulo() {
 		
-		driver.findElement(By.id("buttonPopUpHard")).click();
-		System.out.println(driver.getWindowHandle());//Mostra o nome da janela que está em foco, serve para referenciar janelas sem título
-		System.out.println(driver.getWindowHandles());//Mostra o ID de todas janelas que estão abertas pelo handler
-		driver.switchTo().window((String) driver.getWindowHandles().toArray()[1]);//O window precisa ser uma String, então usa (String) pra fazer um cast 
-		driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
-		driver.switchTo().window((String) driver.getWindowHandles().toArray()[0]);
-		driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
-		driver.quit();
+		dsl.clicarBotao("buttonPopUpHard"); //driver.findElement(By.id("buttonPopUpHard")).click();
+		System.out.println(driver.getWindowHandle()); //Mostra o nome da janela que está em foco, serve para referenciar janelas sem título
+		System.out.println(driver.getWindowHandles()); //Mostra o ID de todas janelas que estão abertas pelo handler
+		dsl.trocarJanela((String) driver.getWindowHandles().toArray()[1]); //driver.switchTo().window((String) driver.getWindowHandles().toArray()[1]);//O window precisa ser uma String, então usa (String) pra fazer um cast 
+		dsl.escrever("textarea", "Deu certo?"); //driver.findElement(By.tagName("textarea")).sendKeys("Deu certo");
+		dsl.trocarJanela((String) driver.getWindowHandles().toArray()[0]); //driver.switchTo().window((String) driver.getWindowHandles().toArray()[0]);
+		dsl.escrever("textarea", "E agora?"); //driver.findElement(By.tagName("textarea")).sendKeys("E agora?");
 	}
 }
