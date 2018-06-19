@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -36,13 +37,21 @@ public class TesteCampoTreinamento {
 	
 	@After
 	public void finaliza() {
-		driver.quit();
+		//driver.quit();
 	}
 	
 	@Test
 	public void testeTextField() {
 		dsl.escrever("elementosForm:nome", "Teste de escrita"); //O método escreve foi criado em uma outra classe para que o código fique mais compreensivel
 		Assert.assertEquals("Teste de escrita", dsl.obterValorCampo("elementosForm:nome"));
+	}
+	
+	@Test
+	public void textFieldDuplo() { //Aqui ele escrevia um nome logo após o outro, então mudei o metodo escrever para apagar o field antes de escrever
+		dsl.escrever("elementosForm:nome", "Pedro");
+		Assert.assertEquals("Pedro", dsl.obterValorCampo("elementosForm:nome"));
+		dsl.escrever("elementosForm:nome", "Frei");
+		Assert.assertEquals("Frei", dsl.obterValorCampo("elementosForm:nome"));
 	}
 	
 	@Test
@@ -119,5 +128,18 @@ public class TesteCampoTreinamento {
 		Assert.assertEquals("Cuidado onde clica, muitas armadilhas...", dsl.obterTexto(By.className("facilAchar")));
 	}
 	
+	@Test
+	public void testJavascript() {
+
+		/*JavascriptExecutor js = (JavascriptExecutor) driver;	
+		//js.executeScript("alert('Testando js via selenium')");		
+		js.executeScript("document.getElementById('elementosForm:nome').value = 'Escrita via js'");
+		js.executeScript("document.getElementById('elementosForm:sobrenome').type = 'radio'");// Dá pra alterar elementos da página, não sei pra que serve, mas é legal
+		
+		WebElement element = driver.findElement(By.id("elementosForm:nome"));
+		js.executeScript("arguments[0].style.border = arguments[1]", element, "solid 3px red");// Adiciona uma borda vermelha ao elemento escolhido
+		*/
+		
+	}
 }
 
